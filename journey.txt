@@ -1,0 +1,77 @@
+#include <cmath>
+#include <cstdio>
+#include <vector>
+#include <iostream>
+#include <algorithm>
+#include <map>
+
+using namespace std;
+
+vector<int> visit;
+int len;
+
+int dfs(vector<map<int, int> >& g, int node, int dist) {
+    //cout << "dfs " << node << " dist " << dist << endl;
+    visit[node] = 1;
+    int max1 = dist, max2 = 0, max_dep = 0;
+    for(auto iter = g[node].begin(); iter != g[node].end(); ++iter) {
+        if(iter->second >= max1) {
+            max2 = max1;
+            max1 = iter->second;
+        } else {
+            max2 = max(iter->second, max2);
+        }
+    }
+    //cout << "nod " << node << " max " << max1 << " " << max2 << endl;
+    for(auto iter = g[node].begin(); iter != g[node].end(); ++iter) {
+        if(visit[iter->first]) {
+            iter->second = dist;
+        } else {
+            iter->second = dfs(g, iter->first, 1 + (iter->second != max1 ? max1 : max2));
+            max_dep = max(max_dep, iter->second);
+        }
+    }
+    for(auto it2 = g[node].begin(); it2 != g[node].end(); ++it2) {
+        //cout << "(" << it2->first << ", " <<it2->second << ") ";
+    }
+    //cout << endl << len << endl;
+    len = max(len, dist);
+    return max_dep + 1;
+}
+
+int main() {
+    int n, m;
+    cin >> n >> m;
+    vector<map<int, int> > g(n);
+    for(int i = 0; i < n - 1; ++i) {
+        int a, b;
+        cin >> a >> b;
+        g[a - 1][b - 1] = 0;
+        g[b - 1][a - 1] = 0;
+    }
+    visit.assign(n, 0);
+    dfs(g, 0, 0);
+    visit.assign(n, 0);
+    dfs(g, 0, 0);
+    /*
+    for(auto it1 = g.begin(); it1 != g.end(); ++it1) {
+        for(auto it2 = (*it1).begin(); it2 != (*it1).end(); ++it2) {
+            cout << "(" << it2->first << ", " <<it2->second << ") ";
+        }
+        cout << endl;
+    }*/
+    
+    //cout << "len " << len << endl;
+    
+    while(m--) {
+        int v, dist = 0;
+        long long k, sum = 0;
+        cin >> v >> k;
+        for(auto iter = g[v - 1].begin(); iter != g[v - 1].end(); ++iter) {
+            dist = max(dist, iter->second);
+        }
+        sum = dist + (k - 1) * len;
+        cout << sum << endl;
+    }
+    return 0;
+}
